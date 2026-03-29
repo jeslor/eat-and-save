@@ -1,5 +1,9 @@
 # Eat and Save
 
+<p align="center">
+  <img src="./assets/images/sample.png" alt="Eat and Save app preview" width="360" />
+</p>
+
 Eat and Save is a React Native + Expo mobile app that acts as a **healthy eating assistant** and a **money-saving meal discovery app**.
 
 The app is designed to help users:
@@ -338,4 +342,3 @@ That means:
 - The app is designed to prioritize **healthy eating + cost savings together**
 - Price, nutrition, savings, and action should remain visible anywhere meals are surfaced
 - The recommendation model should continue using the 6 fixed lanes even as live discovery gets stronger
-
