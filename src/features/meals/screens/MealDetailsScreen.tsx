@@ -14,6 +14,7 @@ import { themeColors } from '@/constants/theme';
 import { useDailyDiscovery } from '@/features/discovery/useDailyDiscovery';
 import { getMealSavings, getMealSavingsPercentage } from '@/lib/recommendations/savings';
 import { formatCurrency, formatDiscoveryFreshness, formatPercentage } from '@/utils/format';
+import { openExternalUrl } from '@/utils/openExternalUrl';
 
 export function MealDetailsScreen() {
   const router = useRouter();
@@ -37,7 +38,9 @@ export function MealDetailsScreen() {
   const primaryAction =
     meal.availability === 'cook'
       ? () => router.push({ pathname: '/recipe/[mealId]', params: { mealId: meal.id } })
-      : () => router.push({ pathname: '/checkout', params: { mealId: meal.id } });
+      : () => {
+          void openExternalUrl(meal.sourceUrl);
+        };
 
   return (
     <AppScreen>
@@ -135,8 +138,7 @@ export function MealDetailsScreen() {
                   {meal.comparisonLabel}
                 </Text>
                 <Text className="mt-3 font-body text-sm leading-6 text-text-secondary">
-                  {meal.proteinG}g protein · {meal.fiberG}g fiber · {meal.addedSugarG}g added sugar · source:{' '}
-                  {meal.sourceUrl}
+                  {meal.proteinG}g protein · {meal.fiberG}g fiber · {meal.addedSugarG}g added sugar · direct destination prepared for {meal.sourceLabel}
                 </Text>
               </View>
 
@@ -163,11 +165,13 @@ export function MealDetailsScreen() {
                   {formatCurrency(meal.price * quantity)}
                 </Text>
                 <Text className="font-medium text-xs text-background/70">
-                  {meal.availability === 'cook' ? 'Open full recipe' : 'Continue to checkout'}
+                  {meal.availability === 'cook'
+                    ? 'Open full recipe'
+                    : `Open the ${meal.sourceLabel} meal page`}
                 </Text>
               </View>
               <Text className="font-ui text-base text-background">
-                {meal.availability === 'cook' ? 'View recipe' : 'Checkout'}
+                {meal.availability === 'cook' ? 'View recipe' : 'Open source'}
               </Text>
             </View>
           </ScalePressable>

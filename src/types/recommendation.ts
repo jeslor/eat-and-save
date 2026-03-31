@@ -14,6 +14,7 @@ export type MealAction = {
   provider: string;
   url: string;
   source: 'provider' | 'api' | 'fallback';
+  destinationKind?: 'direct' | 'search';
 };
 
 export type DiscoverySource = {

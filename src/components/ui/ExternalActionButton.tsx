@@ -10,10 +10,17 @@ type ExternalActionButtonProps = {
 export function ExternalActionButton({ action }: ExternalActionButtonProps) {
   const className =
     action.kind === 'order'
-      ? 'bg-surface border-border'
+      ? action.destinationKind === 'direct'
+        ? 'bg-surface border-accent/50'
+        : 'bg-surface border-border'
       : 'bg-surface border-health/40';
 
-  const textClassName = action.kind === 'order' ? 'text-text-primary' : 'text-health';
+  const textClassName =
+    action.kind === 'order'
+      ? action.destinationKind === 'direct'
+        ? 'text-accent'
+        : 'text-text-primary'
+      : 'text-health';
 
   return (
     <Pressable
@@ -24,7 +31,14 @@ export function ExternalActionButton({ action }: ExternalActionButtonProps) {
       }}
     >
       <Text className={`font-ui text-sm ${textClassName}`}>{action.label}</Text>
-      <Text className="font-copy mt-1 text-xs text-text-secondary">{action.provider}</Text>
+      <Text className="font-copy mt-1 text-xs text-text-secondary">
+        {action.provider}
+        {action.kind === 'order'
+          ? action.destinationKind === 'direct'
+            ? ' · direct meal destination'
+            : ' · backup search'
+          : ''}
+      </Text>
     </Pressable>
   );
 }
