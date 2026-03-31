@@ -1,5 +1,5 @@
-import 'react-native-url-polyfill/auto';
-import '../global.css';
+import "react-native-url-polyfill/auto";
+import "../global.css";
 
 import {
   Inter_400Regular,
@@ -7,15 +7,15 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
   useFonts,
-} from '@expo-google-fonts/inter';
-import * as SplashScreen from 'expo-splash-screen';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+} from "@expo-google-fonts/inter";
+import * as SplashScreen from "expo-splash-screen";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { AppProviders } from '@/components/providers/AppProviders';
-import { themeColors } from '@/constants/theme';
+import { AppProviders } from "@/components/providers/AppProviders";
+import { themeColors } from "@/constants/theme";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -45,27 +45,52 @@ export default function RootLayout() {
           screenOptions={{
             headerStyle: { backgroundColor: themeColors.surface },
             headerTintColor: themeColors.textPrimary,
-            headerTitleStyle: { fontFamily: 'Inter_600SemiBold' },
+            headerTitleStyle: { fontFamily: "Inter_600SemiBold" },
             headerShadowVisible: false,
             contentStyle: { backgroundColor: themeColors.background },
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="recommendations/index" options={{ title: 'Daily picks' }} />
-          <Stack.Screen name="meals/index" options={{ title: 'Meals' }} />
+          <Stack.Screen
+            name="recommendations/index"
+            options={{ title: "Daily picks" }}
+          />
+          <Stack.Screen name="meals/index" options={{ title: "Meals" }} />
           <Stack.Screen
             name="meals/[mealId]"
-            options={{ title: 'Meal details', headerBackTitle: 'Back' }}
+            options={{ title: "Meal details", headerBackTitle: "Back" }}
           />
-          <Stack.Screen name="auth/index" options={{ title: 'Auth center' }} />
-          <Stack.Screen name="search/index" options={{ title: 'Search meals' }} />
-          <Stack.Screen name="favorites/index" options={{ title: 'Favorites' }} />
-          <Stack.Screen name="savings/index" options={{ title: 'Savings insights' }} />
-          <Stack.Screen name="history/index" options={{ title: 'Meal history' }} />
-          <Stack.Screen name="recipe/[mealId]" options={{ title: 'Recipe' }} />
-          <Stack.Screen name="notifications/index" options={{ title: 'Notifications' }} />
-          <Stack.Screen name="checkout/index" options={{ title: 'Checkout' }} />
-          <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
+          <Stack.Screen
+            name="auth/index"
+            options={{
+              title: "Auth center",
+              headerBackVisible: true,
+              headerBackTitle: "Back",
+            }}
+          />
+          <Stack.Screen
+            name="search/index"
+            options={{ title: "Search meals" }}
+          />
+          <Stack.Screen
+            name="favorites/index"
+            options={{ title: "Favorites" }}
+          />
+          <Stack.Screen
+            name="savings/index"
+            options={{ title: "Savings insights" }}
+          />
+          <Stack.Screen
+            name="history/index"
+            options={{ title: "Meal history" }}
+          />
+          <Stack.Screen name="recipe/[mealId]" options={{ title: "Recipe" }} />
+          <Stack.Screen
+            name="notifications/index"
+            options={{ title: "Notifications" }}
+          />
+          <Stack.Screen name="checkout/index" options={{ title: "Checkout" }} />
+          <Stack.Screen name="+not-found" options={{ title: "Not found" }} />
         </Stack>
       </AppProviders>
     </GestureHandlerRootView>

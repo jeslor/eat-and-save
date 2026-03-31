@@ -152,6 +152,17 @@ export function SignInScreen() {
           </View>
 
           <View className="gap-3">
+            {mode === "signUp" ? (
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                onChangeText={setEmail}
+                placeholder="Username"
+                value={email}
+                className="rounded-[22px] border border-border bg-elevated px-4 py-4 text-text-primary"
+              />
+            ) : null}
             <TextInput
               autoCapitalize="none"
               autoCorrect={false}
