@@ -1,4 +1,4 @@
-import { PropsWithChildren, useMemo, useRef } from 'react';
+import { PropsWithChildren, useMemo, useRef } from "react";
 import {
   Animated,
   Pressable,
@@ -6,10 +6,10 @@ import {
   type PressableProps,
   type StyleProp,
   type ViewStyle,
-} from 'react-native';
+} from "react-native";
 
 type ScalePressableProps = PropsWithChildren<
-  Omit<PressableProps, 'style'> & {
+  Omit<PressableProps, "style"> & {
     className?: string;
     style?: StyleProp<ViewStyle>;
   }
@@ -24,7 +24,10 @@ export function ScalePressable({
   ...props
 }: ScalePressableProps) {
   const scale = useRef(new Animated.Value(1)).current;
-  const animatedStyle = useMemo(() => [{ transform: [{ scale }] }, style], [scale, style]);
+  const animatedStyle = useMemo(
+    () => [{ transform: [{ scale }] }, style],
+    [scale, style],
+  );
 
   function handlePressIn(event: GestureResponderEvent) {
     Animated.spring(scale, {
@@ -50,7 +53,12 @@ export function ScalePressable({
 
   return (
     <Animated.View style={animatedStyle}>
-      <Pressable {...props} className={className} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+      <Pressable
+        {...props}
+        className={className}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
         {children}
       </Pressable>
     </Animated.View>

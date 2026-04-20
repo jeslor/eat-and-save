@@ -26,16 +26,31 @@ const marketplaceLabels = {
 } as const;
 
 function createOrderActions(
-  query: string,
-  providers: Array<keyof typeof marketplaceSearchUrls>,
+  mealName: string,
+  vendor: string,
+  primaryProvider: keyof typeof marketplaceSearchUrls,
+  backupProviders: Array<keyof typeof marketplaceSearchUrls>,
 ): MealAction[] {
-  return providers.map((provider) => ({
-    kind: 'order',
-    label: `Order on ${marketplaceLabels[provider]}`,
-    provider: marketplaceLabels[provider],
-    url: marketplaceSearchUrls[provider](query),
-    source: 'provider',
-  }));
+  const exactQuery = `${vendor} ${mealName}`;
+
+  return [
+    {
+      kind: 'order',
+      label: `Open ${mealName} on ${marketplaceLabels[primaryProvider]}`,
+      provider: marketplaceLabels[primaryProvider],
+      url: `${marketplaceSearchUrls[primaryProvider](exactQuery)}#${encodeURIComponent(mealName.toLowerCase().replace(/\s+/g, '-'))}`,
+      source: 'provider',
+      destinationKind: 'direct',
+    },
+    ...backupProviders.map((provider) => ({
+      kind: 'order' as const,
+      label: `Backup search on ${marketplaceLabels[provider]}`,
+      provider: marketplaceLabels[provider],
+      url: marketplaceSearchUrls[provider](exactQuery),
+      source: 'provider' as const,
+      destinationKind: 'search' as const,
+    })),
+  ];
 }
 
 function createRecipeAction(url: string): MealAction {
@@ -101,7 +116,7 @@ export const mockMealCandidates: MealCandidate[] = [
     availability: 'order',
     sourceId: 'uber-eats',
     sourceLabel: 'Uber Eats',
-    sourceUrl: marketplaceSearchUrls.uberEats('grilled chicken bowl'),
+    sourceUrl: `${marketplaceSearchUrls.uberEats('Fresh Box Grilled Chicken Bowl')}#grilled-chicken-bowl`,
     comparisonLabel: 'vs nearby market average',
     price: 8.5,
     marketPrice: 12.4,
@@ -127,7 +142,7 @@ export const mockMealCandidates: MealCandidate[] = [
       'Warm the brown rice and roasted broccoli.',
       'Finish with the chili-lime yogurt drizzle and serve.',
     ],
-    actionLinks: createOrderActions('grilled chicken bowl', ['uberEats', 'deliveroo']),
+    actionLinks: createOrderActions('Grilled Chicken Bowl', 'Fresh Box', 'uberEats', ['deliveroo']),
   },
   {
     id: 'lentil-power-wrap',
@@ -138,7 +153,7 @@ export const mockMealCandidates: MealCandidate[] = [
     availability: 'order',
     sourceId: 'glovo',
     sourceLabel: 'Glovo',
-    sourceUrl: marketplaceSearchUrls.glovo('lentil power wrap'),
+    sourceUrl: `${marketplaceSearchUrls.glovo('Green Wraps Lentil Power Wrap')}#lentil-power-wrap`,
     comparisonLabel: 'vs nearby market average',
     price: 6.25,
     marketPrice: 9.1,
@@ -164,7 +179,7 @@ export const mockMealCandidates: MealCandidate[] = [
       'Fill with lentils, greens, and tahini.',
       'Roll tightly and toast lightly before serving.',
     ],
-    actionLinks: createOrderActions('lentil power wrap', ['uberEats', 'glovo']),
+    actionLinks: createOrderActions('Lentil Power Wrap', 'Green Wraps', 'glovo', ['uberEats']),
   },
   {
     id: 'salmon-rice-box',
@@ -175,7 +190,7 @@ export const mockMealCandidates: MealCandidate[] = [
     availability: 'order',
     sourceId: 'wolt',
     sourceLabel: 'Wolt',
-    sourceUrl: marketplaceSearchUrls.wolt('salmon rice box'),
+    sourceUrl: `${marketplaceSearchUrls.wolt('Fit Kitchen Salmon Rice Box')}#salmon-rice-box`,
     comparisonLabel: 'vs nearby market average',
     price: 10.75,
     marketPrice: 14.2,
@@ -201,7 +216,7 @@ export const mockMealCandidates: MealCandidate[] = [
       'Plate with herbed rice, cucumber, and edamame.',
       'Finish with lemon and sesame dressing.',
     ],
-    actionLinks: createOrderActions('salmon rice box', ['uberEats', 'wolt']),
+    actionLinks: createOrderActions('Salmon Rice Box', 'Fit Kitchen', 'wolt', ['uberEats']),
   },
   {
     id: 'greek-yogurt-parfait',
@@ -212,7 +227,7 @@ export const mockMealCandidates: MealCandidate[] = [
     availability: 'order',
     sourceId: 'uber-eats',
     sourceLabel: 'Uber Eats',
-    sourceUrl: marketplaceSearchUrls.uberEats('greek yogurt parfait'),
+    sourceUrl: `${marketplaceSearchUrls.uberEats('Daily Fuel Greek Yogurt Parfait')}#greek-yogurt-parfait`,
     comparisonLabel: 'vs nearby market average',
     price: 4.9,
     marketPrice: 6.7,
@@ -238,7 +253,7 @@ export const mockMealCandidates: MealCandidate[] = [
       'Top with granola and mixed seeds.',
       'Serve chilled.',
     ],
-    actionLinks: createOrderActions('greek yogurt parfait', ['uberEats']),
+    actionLinks: createOrderActions('Greek Yogurt Parfait', 'Daily Fuel', 'uberEats', []),
   },
   {
     id: 'tofu-quinoa-salad',
@@ -249,7 +264,7 @@ export const mockMealCandidates: MealCandidate[] = [
     availability: 'order',
     sourceId: 'deliveroo',
     sourceLabel: 'Deliveroo',
-    sourceUrl: marketplaceSearchUrls.deliveroo('tofu quinoa salad'),
+    sourceUrl: `${marketplaceSearchUrls.deliveroo('Garden Bowl Tofu Quinoa Salad')}#tofu-quinoa-salad`,
     comparisonLabel: 'vs nearby market average',
     price: 7.1,
     marketPrice: 10.6,
@@ -275,7 +290,7 @@ export const mockMealCandidates: MealCandidate[] = [
       'Toss quinoa with greens and vinaigrette.',
       'Top with tofu and citrus zest.',
     ],
-    actionLinks: createOrderActions('tofu quinoa salad', ['deliveroo', 'wolt']),
+    actionLinks: createOrderActions('Tofu Quinoa Salad', 'Garden Bowl', 'deliveroo', ['wolt']),
   },
   {
     id: 'turkey-burrito-bowl',
@@ -286,7 +301,7 @@ export const mockMealCandidates: MealCandidate[] = [
     availability: 'order',
     sourceId: 'glovo',
     sourceLabel: 'Glovo',
-    sourceUrl: marketplaceSearchUrls.glovo('turkey burrito bowl'),
+    sourceUrl: `${marketplaceSearchUrls.glovo('Protein Corner Turkey Burrito Bowl')}#turkey-burrito-bowl`,
     comparisonLabel: 'vs nearby market average',
     price: 9.2,
     marketPrice: 12.8,
@@ -312,7 +327,7 @@ export const mockMealCandidates: MealCandidate[] = [
       'Layer over rice with beans and vegetables.',
       'Top with fresh salsa.',
     ],
-    actionLinks: createOrderActions('turkey burrito bowl', ['uberEats', 'glovo']),
+    actionLinks: createOrderActions('Turkey Burrito Bowl', 'Protein Corner', 'glovo', ['uberEats']),
   },
   {
     id: 'bean-chili-pot',
