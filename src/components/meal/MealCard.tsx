@@ -1,8 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Text, View } from 'react-native';
 
+import { useAppSettings } from '@/components/providers/AppSettingsProvider';
 import { ScalePressable } from '@/components/ui/ScalePressable';
-import { themeGradients } from '@/constants/theme';
 import { getMealSavings, getMealSavingsPercentage } from '@/lib/recommendations/savings';
 import type { MealCandidate } from '@/types/recommendation';
 import { formatCurrency, formatPercentage } from '@/utils/format';
@@ -55,11 +55,13 @@ function MealFooter({ meal, ctaLabel = 'View meal' }: { meal: MealCandidate; cta
 }
 
 export function MealCard({ meal, variant, eyebrow, ctaLabel, subtitle, onPress }: MealCardProps) {
+  const { gradients } = useAppSettings();
+
   if (variant === 'featured') {
     return (
       <ScalePressable onPress={onPress}>
         <LinearGradient
-          colors={[...themeGradients.accent]}
+          colors={[...gradients.accent]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           className="overflow-hidden rounded-[28px] shadow-float"

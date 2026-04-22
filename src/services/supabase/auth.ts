@@ -84,7 +84,7 @@ export async function signInWithEmail(email: string, password: string) {
   }
 }
 
-export async function signUpWithEmail(email: string, password: string) {
+export async function signUpWithEmail(email: string, password: string, fullName: string) {
   if (!supabase) {
     throw new Error('Supabase is not configured in this app.');
   }
@@ -93,6 +93,11 @@ export async function signUpWithEmail(email: string, password: string) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
     });
 
     if (error) {
@@ -106,6 +111,24 @@ export async function signUpWithEmail(email: string, password: string) {
     }
 
     throw new Error('Sign up failed.');
+  }
+}
+
+export async function resetPassword(email: string) {
+  if (!supabase) {
+    throw new Error('Supabase is not configured in this app.');
+  }
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Password reset failed. ${error.message}`);
+    }
+    throw new Error('Password reset failed.');
   }
 }
 

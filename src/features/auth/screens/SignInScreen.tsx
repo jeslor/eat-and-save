@@ -1,43 +1,98 @@
-import { useMemo, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import {
+  Redirect,
+  type Href,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Animated,
+  Easing,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { AppScreen } from "@/components/ui/AppScreen";
 import { ScalePressable } from "@/components/ui/ScalePressable";
 import { useAuthSession } from "@/features/auth/useAuthSession";
-import {
-  signInWithEmail,
-  signOutCurrentUser,
-  signUpWithEmail,
-} from "@/services/supabase/auth";
+import { signInWithEmail, signUpWithEmail } from "@/services/supabase/auth";
 import { supabaseConfig } from "@/services/supabase/env";
 
+import { resetPassword } from "@/services/supabase/auth";
+
 export function SignInScreen() {
+  const router = useRouter();
+  const { redirectTo } = useLocalSearchParams<{ redirectTo?: string }>();
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
+  const [toggleWidth, setToggleWidth] = useState(300);
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotFeedback, setForgotFeedback] = useState<string | null>(null);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const indicatorX = useRef(new Animated.Value(0)).current;
 
   const {
     disableSignup,
     mailerAutoconfirm,
-    sessionEmail,
     sessionError,
     sessionLoading,
     settingsError,
+    isAuthenticated,
   } = useAuthSession();
 
   const modeLabel = useMemo(
     () => (mode === "signIn" ? "Sign in" : "Create account"),
     [mode],
   );
+  const destination = ((redirectTo as string | undefined) ??
+    "/(tabs)/profile") as Href;
+  const signupDisabled = disableSignup === true && mode === "signUp";
+  const activeIndex = mode === "signIn" ? 0 : 1;
+  const segmentWidth = toggleWidth > 0 ? toggleWidth / 2 : 0;
+
+  useEffect(() => {
+    if (segmentWidth === 0) {
+      return;
+    }
+
+    Animated.timing(indicatorX, {
+      toValue: activeIndex * 150,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [activeIndex, indicatorX, segmentWidth]);
 
   async function handleSubmit() {
+    const normalizedFullName = fullName.trim();
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail || !password) {
       setSubmitError("Email and password are both required.");
+      setFeedback(null);
+      return;
+    }
+
+    if (mode === "signUp" && !normalizedFullName) {
+      setSubmitError(
+        "Full name, email, and password are all required to create an account.",
+      );
+      setFeedback(null);
+      return;
+    }
+
+    if (signupDisabled) {
+      setSubmitError(
+        "Account creation is disabled for this project right now.",
+      );
       setFeedback(null);
       return;
     }
@@ -55,21 +110,29 @@ export function SignInScreen() {
             ? `Signed in as ${result.user.email}.`
             : "Sign in completed successfully.",
         );
+        router.replace(destination);
         return;
       }
 
-      const result = await signUpWithEmail(normalizedEmail, password);
+      console.log(indicatorX);
+
+      const result = await signUpWithEmail(
+        normalizedEmail,
+        password,
+        normalizedFullName,
+      );
 
       if (result.session) {
         setFeedback(
-          `Account created and signed in as ${result.user?.email ?? normalizedEmail}.`,
+          `Account created for ${normalizedFullName} and signed in as ${result.user?.email ?? normalizedEmail}.`,
         );
+        router.replace(destination);
         return;
       }
 
       setFeedback(
         mailerAutoconfirm === false
-          ? "Account created. Check your email to confirm the address before signing in."
+          ? `Account created for ${normalizedFullName}. Check your email to confirm the address before signing in.`
           : "Account created successfully.",
       );
     } catch (error) {
@@ -81,21 +144,8 @@ export function SignInScreen() {
     }
   }
 
-  async function handleSignOut() {
-    setSubmitting(true);
-    setSubmitError(null);
-    setFeedback(null);
-
-    try {
-      await signOutCurrentUser();
-      setFeedback("Signed out successfully.");
-    } catch (error) {
-      setSubmitError(
-        error instanceof Error ? error.message : "Sign out failed.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+  if (!sessionLoading && isAuthenticated) {
+    return <Redirect href={destination} />;
   }
 
   return (
@@ -103,63 +153,82 @@ export function SignInScreen() {
       <View className="flex-1 px-5 pt-6">
         <View className="gap-6 rounded-[32px] bg-surface p-5">
           <View className="gap-2">
-            <Text className="font-heading text-[30px] leading-9 text-text-primary text-center">
+            <Text className="font-heading text-center text-[30px] leading-9 text-text-primary">
               Sign in or create your account
+            </Text>
+            <Text className="font-body text-center text-sm leading-6 text-text-secondary">
+              Save meals, keep your preferences, and unlock your profile across
+              the app.
             </Text>
           </View>
 
-          <View className=" flex justify-center flex-row gap-1.5 ">
-            <ScalePressable
-              className={`flex rounded-[18px] border px-4 py-3.5  ${
-                mode === "signIn"
-                  ? "border-accent bg-accent"
-                  : "border-transparent bg-transparent"
-              }`}
-              onPress={() => {
-                setMode("signIn");
-                setSubmitError(null);
-                setFeedback(null);
+          <View className="h-[54px] w-[300px] mx-auto  flex justify-center items-center rounded-[22px] bg-elevated py-1.5 relative">
+            <View
+              className="relative flex-row w-full"
+              onLayout={(event) => {
+                setToggleWidth(300);
               }}
             >
-              <Text
-                className={`font-ui text-center ${
-                  mode === "signIn" ? "text-background" : "text-text-secondary"
-                }`}
+              {segmentWidth > 0 ? (
+                <Animated.View
+                  pointerEvents="none"
+                  className="absolute inset-y-0 h-full left-0 rounded-[22px] border border-accent bg-accent"
+                  style={{
+                    width: 150,
+                    transform: [{ translateX: indicatorX }],
+                  }}
+                />
+              ) : null}
+              <ScalePressable
+                style={{ width: segmentWidth }}
+                className="h-[54px]  items-center justify-center rounded-[18px] px-3 py-3.5 "
+                onPress={() => {
+                  setMode("signIn");
+                  setSubmitError(null);
+                  setFeedback(null);
+                }}
               >
-                Sign in
-              </Text>
-            </ScalePressable>
-            <ScalePressable
-              className={` rounded-[18px] border px-4 py-3.5 ${
-                mode === "signUp"
-                  ? "border-accent bg-accent"
-                  : "border-transparent bg-transparent"
-              }`}
-              onPress={() => {
-                setMode("signUp");
-                setSubmitError(null);
-                setFeedback(null);
-              }}
-            >
-              <Text
-                className={`font-ui text-center ${
-                  mode === "signUp" ? "text-background" : "text-text-secondary"
-                }`}
+                <Text
+                  numberOfLines={1}
+                  className={`font-ui text-center ${
+                    mode === "signIn"
+                      ? "text-background"
+                      : "text-text-secondary"
+                  }`}
+                >
+                  Sign in
+                </Text>
+              </ScalePressable>
+              <ScalePressable
+                className="min-h-[54px] flex-1 items-center justify-center rounded-[18px] px-3 py-3.5"
+                onPress={() => {
+                  setMode("signUp");
+                  setSubmitError(null);
+                  setFeedback(null);
+                }}
               >
-                Create account
-              </Text>
-            </ScalePressable>
+                <Text
+                  numberOfLines={1}
+                  className={`font-ui text-center ${
+                    mode === "signUp"
+                      ? "text-background"
+                      : "text-text-secondary"
+                  }`}
+                >
+                  Create account
+                </Text>
+              </ScalePressable>
+            </View>
           </View>
 
           <View className="gap-3">
             {mode === "signUp" ? (
               <TextInput
-                autoCapitalize="none"
+                autoCapitalize="words"
                 autoCorrect={false}
-                keyboardType="email-address"
-                onChangeText={setEmail}
-                placeholder="Username"
-                value={email}
+                onChangeText={setFullName}
+                placeholder="Full name"
+                value={fullName}
                 className="rounded-[22px] border border-border bg-elevated px-4 py-4 text-text-primary"
               />
             ) : null}
@@ -181,11 +250,26 @@ export function SignInScreen() {
               value={password}
               className="rounded-[22px] border border-border bg-elevated px-4 py-4 text-text-primary"
             />
+            {mode === "signIn" && (
+              <Pressable
+                className="mt-1 self-end"
+                onPress={() => {
+                  setShowForgot(true);
+                  setForgotEmail("");
+                  setForgotFeedback(null);
+                  setForgotError(null);
+                }}
+              >
+                <Text className="text-accent font-ui text-sm">
+                  Forgot password?
+                </Text>
+              </Pressable>
+            )}
           </View>
 
           <Pressable
-            className={`rounded-[22px] px-4 py-4 ${submitting ? "bg-accent/60" : "bg-accent"}`}
-            disabled={submitting}
+            className={`rounded-[22px] px-4 py-4 ${submitting || signupDisabled ? "bg-accent/60" : "bg-accent"}`}
+            disabled={submitting || signupDisabled}
             onPress={() => {
               void handleSubmit();
             }}
@@ -224,37 +308,87 @@ export function SignInScreen() {
 
         <View className="mt-6 rounded-[28px] bg-surface p-5">
           <Text className="font-heading text-xl text-text-primary">
-            Current session
+            Authentication status
           </Text>
           {sessionLoading ? (
             <Text className="mt-3 font-copy text-sm text-text-secondary">
               Loading session...
             </Text>
-          ) : sessionEmail ? (
-            <View className="mt-3 gap-3">
-              <Text className="font-copy text-sm leading-6 text-text-secondary">
-                Signed in as {sessionEmail}
-              </Text>
-              <Pressable
-                className={`rounded-[22px] px-4 py-4 ${submitting ? "bg-elevated" : "bg-elevated"}`}
-                disabled={submitting}
-                onPress={() => {
-                  void handleSignOut();
-                }}
-              >
-                <Text className="font-ui text-center text-base text-text-primary">
-                  Sign out
-                </Text>
-              </Pressable>
-            </View>
           ) : (
             <Text className="mt-3 font-copy text-sm leading-6 text-text-secondary">
-              No active session yet. Use the form above to sign in or create an
-              account.
+              {supabaseConfig.isConfigured
+                ? "Your account will unlock profile access, saved meals, and persisted preferences."
+                : "Set your Supabase environment variables to enable account creation and sign-in."}
             </Text>
           )}
         </View>
       </View>
+      {/* Forgot Password Modal */}
+      {showForgot && (
+        <View className="absolute inset-0 z-50 flex-1 items-center justify-center bg-black/40">
+          <View className="w-[90%] max-w-[350px] rounded-2xl bg-surface p-6 shadow-lg">
+            <Text className="font-heading text-lg mb-2 text-text-primary">
+              Reset your password
+            </Text>
+            <TextInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              placeholder="Enter your email"
+              value={forgotEmail}
+              onChangeText={setForgotEmail}
+              className="rounded-[22px] border border-border bg-elevated px-4 py-4 text-text-primary mb-3"
+            />
+            <Pressable
+              className="rounded-[22px] px-4 py-3 bg-accent mb-2"
+              onPress={async () => {
+                setForgotFeedback(null);
+                setForgotError(null);
+                if (!forgotEmail.trim()) {
+                  setForgotError("Please enter your email address.");
+                  return;
+                }
+                try {
+                  const result: any = await resetPassword(
+                    forgotEmail.trim().toLowerCase(),
+                  );
+                  if (result.error) {
+                    throw new Error(result.error.message);
+                  }
+                  setForgotEmail("");
+                  setForgotFeedback(
+                    "Password reset email sent. Check your inbox.",
+                  );
+                } catch (e) {
+                  setForgotError(
+                    e instanceof Error ? e.message : "Reset failed.",
+                  );
+                }
+              }}
+            >
+              <Text className="font-ui text-center text-base text-background">
+                Send reset email
+              </Text>
+            </Pressable>
+            {forgotFeedback && (
+              <Text className="text-health text-sm mb-1">{forgotFeedback}</Text>
+            )}
+            {forgotError && (
+              <Text className="text-danger text-sm mb-1">{forgotError}</Text>
+            )}
+            <Pressable
+              onPress={() => {
+                setShowForgot(false);
+                setForgotEmail("");
+                setForgotFeedback(null);
+                setForgotError(null);
+              }}
+            >
+              <Text className="text-accent text-center mt-2">Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </AppScreen>
   );
 }
