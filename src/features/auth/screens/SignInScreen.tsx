@@ -20,6 +20,8 @@ import { useAuthSession } from "@/features/auth/useAuthSession";
 import { signInWithEmail, signUpWithEmail } from "@/services/supabase/auth";
 import { supabaseConfig } from "@/services/supabase/env";
 
+import { resetPassword } from "@/services/supabase/auth";
+
 export function SignInScreen() {
   const router = useRouter();
   const { redirectTo } = useLocalSearchParams<{ redirectTo?: string }>();
@@ -31,6 +33,10 @@ export function SignInScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotFeedback, setForgotFeedback] = useState<string | null>(null);
+  const [forgotError, setForgotError] = useState<string | null>(null);
   const indicatorX = useRef(new Animated.Value(0)).current;
 
   const {
@@ -244,6 +250,21 @@ export function SignInScreen() {
               value={password}
               className="rounded-[22px] border border-border bg-elevated px-4 py-4 text-text-primary"
             />
+            {mode === "signIn" && (
+              <Pressable
+                className="mt-1 self-end"
+                onPress={() => {
+                  setShowForgot(true);
+                  setForgotEmail("");
+                  setForgotFeedback(null);
+                  setForgotError(null);
+                }}
+              >
+                <Text className="text-accent font-ui text-sm">
+                  Forgot password?
+                </Text>
+              </Pressable>
+            )}
           </View>
 
           <Pressable
@@ -302,6 +323,72 @@ export function SignInScreen() {
           )}
         </View>
       </View>
+      {/* Forgot Password Modal */}
+      {showForgot && (
+        <View className="absolute inset-0 z-50 flex-1 items-center justify-center bg-black/40">
+          <View className="w-[90%] max-w-[350px] rounded-2xl bg-surface p-6 shadow-lg">
+            <Text className="font-heading text-lg mb-2 text-text-primary">
+              Reset your password
+            </Text>
+            <TextInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              placeholder="Enter your email"
+              value={forgotEmail}
+              onChangeText={setForgotEmail}
+              className="rounded-[22px] border border-border bg-elevated px-4 py-4 text-text-primary mb-3"
+            />
+            <Pressable
+              className="rounded-[22px] px-4 py-3 bg-accent mb-2"
+              onPress={async () => {
+                setForgotFeedback(null);
+                setForgotError(null);
+                if (!forgotEmail.trim()) {
+                  setForgotError("Please enter your email address.");
+                  return;
+                }
+                try {
+                  const result: any = await resetPassword(
+                    forgotEmail.trim().toLowerCase(),
+                  );
+                  if (result.error) {
+                    throw new Error(result.error.message);
+                  }
+                  setForgotEmail("");
+                  setForgotFeedback(
+                    "Password reset email sent. Check your inbox.",
+                  );
+                } catch (e) {
+                  setForgotError(
+                    e instanceof Error ? e.message : "Reset failed.",
+                  );
+                }
+              }}
+            >
+              <Text className="font-ui text-center text-base text-background">
+                Send reset email
+              </Text>
+            </Pressable>
+            {forgotFeedback && (
+              <Text className="text-health text-sm mb-1">{forgotFeedback}</Text>
+            )}
+            {forgotError && (
+              <Text className="text-danger text-sm mb-1">{forgotError}</Text>
+            )}
+            <Pressable
+              onPress={() => {
+                setShowForgot(false);
+                setForgotEmail("");
+                setForgotFeedback(null);
+                setForgotError(null);
+              }}
+            >
+              <Text className="text-accent text-center mt-2">Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </AppScreen>
   );
 }
