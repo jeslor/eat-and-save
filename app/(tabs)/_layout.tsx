@@ -1,28 +1,33 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 
-import { themeColors } from '@/constants/theme';
+import { useAppSettings } from '@/components/providers/AppSettingsProvider';
+import { useAuthSession } from '@/features/auth/useAuthSession';
 
 export default function TabsLayout() {
+  const router = useRouter();
+  const { colors } = useAppSettings();
+  const { isAuthenticated } = useAuthSession();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: themeColors.accent,
-        tabBarInactiveTintColor: themeColors.textMuted,
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: {
           fontSize: 12,
           fontFamily: 'Inter_600SemiBold',
         },
         tabBarStyle: {
-          backgroundColor: themeColors.surface,
-          borderTopColor: themeColors.border,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           height: 74,
           paddingBottom: 10,
           paddingTop: 10,
         },
         sceneStyle: {
-          backgroundColor: themeColors.background,
+          backgroundColor: colors.background,
         },
       }}
     >
@@ -51,6 +56,19 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account-circle-outline" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: (event) => {
+            if (isAuthenticated) {
+              return;
+            }
+
+            event.preventDefault();
+            router.push({
+              pathname: '/auth',
+              params: { redirectTo: '/(tabs)/profile' },
+            });
+          },
         }}
       />
     </Tabs>

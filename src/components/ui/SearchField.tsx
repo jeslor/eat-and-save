@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TextInput, View } from 'react-native';
 
+import { useAppSettings } from '@/components/providers/AppSettingsProvider';
 import { ScalePressable } from '@/components/ui/ScalePressable';
-import { themeColors } from '@/constants/theme';
 
 type SearchFieldProps = {
   value: string;
@@ -19,9 +19,11 @@ export function SearchField({
   editable = true,
   onPress,
 }: SearchFieldProps) {
+  const { colors } = useAppSettings();
+
   const content = (
     <View className="flex-row items-center gap-3 rounded-[22px] border border-border bg-surface px-4 py-3">
-      <MaterialCommunityIcons name="magnify" size={20} color={themeColors.textMuted} />
+      <MaterialCommunityIcons name="magnify" size={20} color={colors.textMuted} />
       <TextInput
         className="flex-1 text-base text-text-primary"
         editable={editable}

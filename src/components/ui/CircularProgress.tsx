@@ -1,7 +1,7 @@
 import Svg, { Circle } from 'react-native-svg';
 import { Text, View } from 'react-native';
 
-import { themeColors } from '@/constants/theme';
+import { useAppSettings } from '@/components/providers/AppSettingsProvider';
 
 type CircularProgressProps = {
   value: number;
@@ -19,11 +19,12 @@ export function CircularProgress({
   max,
   size = 132,
   strokeWidth = 12,
-  color = themeColors.accent,
-  trackColor = '#2E2E38',
+  color,
+  trackColor,
   label,
   suffix = '',
 }: CircularProgressProps) {
+  const { colors } = useAppSettings();
   const boundedValue = Math.max(0, Math.min(value, max));
   const progress = max === 0 ? 0 : boundedValue / max;
   const radius = (size - strokeWidth) / 2;
@@ -43,7 +44,7 @@ export function CircularProgress({
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke={trackColor}
+            stroke={trackColor ?? colors.border}
             strokeWidth={strokeWidth}
             fill="transparent"
           />
@@ -51,7 +52,7 @@ export function CircularProgress({
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke={color}
+            stroke={color ?? colors.accent}
             strokeWidth={strokeWidth}
             fill="transparent"
             strokeDasharray={`${circumference} ${circumference}`}

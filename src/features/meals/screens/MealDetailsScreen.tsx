@@ -4,13 +4,13 @@ import { useMemo, useState } from 'react';
 import { FlatList, Image, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAppSettings } from '@/components/providers/AppSettingsProvider';
 import { ExternalActionButton } from '@/components/ui/ExternalActionButton';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { QuantitySelector } from '@/components/ui/QuantitySelector';
 import { ScalePressable } from '@/components/ui/ScalePressable';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { getMealById, mockMealCandidates } from '@/constants/mockData';
-import { themeColors } from '@/constants/theme';
 import { useDailyDiscovery } from '@/features/discovery/useDailyDiscovery';
 import { getMealSavings, getMealSavingsPercentage } from '@/lib/recommendations/savings';
 import { formatCurrency, formatDiscoveryFreshness, formatPercentage } from '@/utils/format';
@@ -18,6 +18,7 @@ import { openExternalUrl } from '@/utils/openExternalUrl';
 
 export function MealDetailsScreen() {
   const router = useRouter();
+  const { colors } = useAppSettings();
   const insets = useSafeAreaInsets();
   const { mealId } = useLocalSearchParams<{ mealId: string }>();
   const discovery = useDailyDiscovery();
@@ -70,14 +71,14 @@ export function MealDetailsScreen() {
                   <MaterialCommunityIcons
                     name="arrow-left"
                     size={20}
-                    color={themeColors.textPrimary}
+                    color={colors.textPrimary}
                   />
                 </ScalePressable>
                 <ScalePressable className="rounded-full bg-surface p-3">
                   <MaterialCommunityIcons
                     name={meal.isFavorite ? 'heart' : 'heart-outline'}
                     size={20}
-                    color={meal.isFavorite ? themeColors.accent : themeColors.textPrimary}
+                    color={meal.isFavorite ? colors.accent : colors.textPrimary}
                   />
                 </ScalePressable>
               </View>

@@ -1,7 +1,9 @@
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { FlatList, Text, View } from "react-native";
 
 import { MealCard } from "@/components/meal/MealCard";
+import { useAppSettings } from "@/components/providers/AppSettingsProvider";
 import { AppScreen } from "@/components/ui/AppScreen";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { FloatingButton } from "@/components/ui/FloatingButton";
@@ -13,14 +15,13 @@ import {
   mockMealCandidates,
   mockNutritionEntries,
 } from "@/constants/mockData";
-import { themeGradients } from "@/constants/theme";
 import { calculateDailyNutritionScore } from "@/lib/nutrition/score";
 import { getTotalMealSavings } from "@/lib/recommendations/savings";
 import { formatCurrency } from "@/utils/format";
-import { LinearGradient } from "expo-linear-gradient";
 
 export function TrackerScreen() {
   const router = useRouter();
+  const { colors, gradients, themeMode } = useAppSettings();
   const score = calculateDailyNutritionScore(mockNutritionEntries);
   const totalSavings = getTotalMealSavings(mockMealCandidates);
   const totals = mockNutritionEntries.reduce(
@@ -82,7 +83,7 @@ export function TrackerScreen() {
 
               <View className="rounded-[20] overflow-hidden">
                 <LinearGradient
-                  colors={[...themeGradients.accent]}
+                  colors={[...gradients.accent]}
                   className="rounded-[28px] p-5 "
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -92,8 +93,8 @@ export function TrackerScreen() {
                       value={score}
                       max={100}
                       label="daily score"
-                      color="#0F0F14"
-                      trackColor="rgba(15,15,20,0.18)"
+                      color={colors.background}
+                      trackColor={themeMode === 'dark' ? 'rgba(15,15,20,0.18)' : 'rgba(255,255,255,0.42)'}
                     />
                     <View className="flex-1 gap-2">
                       <Text className="font-heading text-2xl text-background">

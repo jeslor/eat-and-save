@@ -108,9 +108,24 @@ Each meal has an action:
 - **orderable meals** link out to provider search/order pages
 - **cook-at-home meals** open recipe flows
 
-### 5. Live Supabase auth
+### 5. Live Supabase auth and gated profile
 
-The app includes a working email/password auth center using Supabase.
+The app includes a working email/password Supabase flow with:
+
+- create account
+- sign in
+- signed-in-only profile access
+- redirect back to profile after auth when needed
+- sign out from the profile screen
+
+### 6. Persisted appearance and preferences
+
+The app now persists user-facing settings locally, including:
+
+- dark mode / light mode
+- daily recommendation briefing toggle
+- deal alert toggle
+- nutrition reminder toggle
 
 Auth helpers:
 
@@ -234,9 +249,9 @@ tests/
 
 ## Design system
 
-The app follows a dark, card-based mobile UI system with:
+The app follows a card-based mobile UI system with:
 
-- dark background and surface layers
+- dark and light appearance modes
 - orange accent for primary actions
 - green accent for health/savings highlights
 - reusable meal cards
@@ -312,6 +327,8 @@ npx expo export --platform web
 - dark design system rebuild
 - reusable UI layer
 - live Supabase auth
+- signed-in profile gate
+- persisted light/dark mode and preferences
 - daily discovery batch model
 - discovery-driven recommendations
 - consistent savings display across key screens

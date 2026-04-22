@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Image, Text, View } from 'react-native';
 
 import { MealCard } from '@/components/meal/MealCard';
+import { useAppSettings } from '@/components/providers/AppSettingsProvider';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { CategoryChip } from '@/components/ui/CategoryChip';
 import { ScalePressable } from '@/components/ui/ScalePressable';
@@ -15,7 +16,6 @@ import {
   mealBrowseCategories,
   mockMealCandidates,
 } from '@/constants/mockData';
-import { themeColors } from '@/constants/theme';
 import { useDailyDiscovery } from '@/features/discovery/useDailyDiscovery';
 import { useDailyRecommendations } from '@/features/recommendations/useDailyRecommendations';
 import { getTopSavingsMeal } from '@/lib/recommendations/savings';
@@ -24,6 +24,7 @@ import type { MealBrowseCategory } from '@/types/recommendation';
 
 export function DiscoveryScreen() {
   const router = useRouter();
+  const { colors } = useAppSettings();
   const [activeCategory, setActiveCategory] = useState<MealBrowseCategory>('all');
   const discovery = useDailyDiscovery();
   const recommendations = useDailyRecommendations();
@@ -77,9 +78,9 @@ export function DiscoveryScreen() {
                   <MaterialCommunityIcons
                     name="bell-outline"
                     size={22}
-                    color={themeColors.textPrimary}
+                    color={colors.textPrimary}
                   />
-                  <View className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-accent" />
+                  <View className="absolute right-3.5 top-3.5 h-2.5 w-2.5 rounded-full bg-accent" />
                 </ScalePressable>
                 <Image
                   source={{

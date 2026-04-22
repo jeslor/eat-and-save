@@ -1,6 +1,8 @@
 import { PropsWithChildren, useEffect } from 'react';
 import { Text, TextInput, type TextInputProps, type TextProps } from 'react-native';
 
+import { useAppSettings } from '@/components/providers/AppSettingsProvider';
+
 type TextWithDefaults = typeof Text & {
   defaultProps?: TextProps;
 };
@@ -10,6 +12,8 @@ type TextInputWithDefaults = typeof TextInput & {
 };
 
 export function TypographyProvider({ children }: PropsWithChildren) {
+  const { colors } = useAppSettings();
+
   useEffect(() => {
     const TextComponent = Text as TextWithDefaults;
     const TextInputComponent = TextInput as TextInputWithDefaults;
@@ -21,7 +25,7 @@ export function TypographyProvider({ children }: PropsWithChildren) {
       ...previousTextDefaults,
       style: [
         {
-          color: '#FFFFFF',
+          color: colors.textPrimary,
           fontFamily: 'Inter_400Regular',
         },
         previousTextDefaults?.style,
@@ -30,10 +34,10 @@ export function TypographyProvider({ children }: PropsWithChildren) {
 
     TextInputComponent.defaultProps = {
       ...previousTextInputDefaults,
-      placeholderTextColor: previousTextInputDefaults?.placeholderTextColor ?? '#6B7280',
+      placeholderTextColor: previousTextInputDefaults?.placeholderTextColor ?? colors.textMuted,
       style: [
         {
-          color: '#FFFFFF',
+          color: colors.textPrimary,
           fontFamily: 'Inter_500Medium',
         },
         previousTextInputDefaults?.style,
@@ -44,7 +48,7 @@ export function TypographyProvider({ children }: PropsWithChildren) {
       TextComponent.defaultProps = previousTextDefaults;
       TextInputComponent.defaultProps = previousTextInputDefaults;
     };
-  }, []);
+  }, [colors.textMuted, colors.textPrimary]);
 
   return children;
 }
