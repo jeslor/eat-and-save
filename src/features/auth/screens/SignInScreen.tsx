@@ -163,9 +163,9 @@ export function SignInScreen() {
             </Text>
           </View>
 
-          <View className="h-[54px] mx-auto flex justify-center items-center rounded-[22px] bg-elevated py-1.5 relative">
+          <View className="h-[54px] w-[300px] mx-auto flex justify-center items-center rounded-[22px] bg-elevated py-1.5 relative">
             <View
-              className="relative w-[300px] flex-row items-center rounded-[22px] bg-elevated"
+              className="relative w-full flex-row h-full items-center rounded-[22px] bg-elevated"
               onLayout={(event) => {
                 const width = event.nativeEvent.layout.width;
                 // Only update if width is valid and different
@@ -177,10 +177,13 @@ export function SignInScreen() {
               {segmentWidth > 0 ? (
                 <Animated.View
                   pointerEvents="none"
-                  className="absolute inset-y-0 h-full left-0 rounded-[22px] border border-accent bg-accent"
+                  className="inset-y-0 h-[54px] left-0 rounded-[22px] border border-accent"
                   style={{
-                    width: 150,
+                    width: "50%",
+                    height: "100%",
                     position: "absolute",
+                    borderRadius: 22,
+                    backgroundColor: "#F97316", // Use your accent color here
                     transform: [{ translateX: indicatorX }],
                   }}
                 />
@@ -210,8 +213,8 @@ export function SignInScreen() {
               </ScalePressable>
               {/* Create Account Button */}
               <ScalePressable
-                style={{ width: segmentWidth }}
-                className="h-[54px] items-center justify-center rounded-[18px] px-3 py-3.5 w-1/2"
+                style={{ width: "50%" }}
+                className="h-[54px] items-center justify-center rounded-[22px] px-3 py-3"
                 onPress={() => {
                   setMode("signUp");
                   setSubmitError(null);
