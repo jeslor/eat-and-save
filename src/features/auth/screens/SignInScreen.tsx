@@ -26,6 +26,7 @@ export function SignInScreen() {
   const router = useRouter();
   const { redirectTo } = useLocalSearchParams<{ redirectTo?: string }>();
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
+  // Default to 300 so buttons are always visible on first render
   const [toggleWidth, setToggleWidth] = useState(300);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -56,15 +57,15 @@ export function SignInScreen() {
     "/(tabs)/profile") as Href;
   const signupDisabled = disableSignup === true && mode === "signUp";
   const activeIndex = mode === "signIn" ? 0 : 1;
-  const segmentWidth = toggleWidth > 0 ? toggleWidth / 2 : 0;
+  // Always fallback to 150px per button if toggleWidth is not measured yet
+  const segmentWidth = toggleWidth > 0 ? toggleWidth / 2 : 150;
 
   useEffect(() => {
     if (segmentWidth === 0) {
       return;
     }
-
     Animated.timing(indicatorX, {
-      toValue: activeIndex * 150,
+      toValue: activeIndex * segmentWidth,
       duration: 220,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
@@ -162,11 +163,15 @@ export function SignInScreen() {
             </Text>
           </View>
 
-          <View className="h-[54px] w-[300px] mx-auto  flex justify-center items-center rounded-[22px] bg-elevated py-1.5 relative">
+          <View className="h-[54px] mx-auto flex justify-center items-center rounded-[22px] bg-elevated py-1.5 relative">
             <View
-              className="relative flex-row w-full"
+              className="relative w-[300px] flex-row items-center rounded-[22px] bg-elevated"
               onLayout={(event) => {
-                setToggleWidth(300);
+                const width = event.nativeEvent.layout.width;
+                // Only update if width is valid and different
+                if (width && width !== toggleWidth) {
+                  setToggleWidth(width);
+                }
               }}
             >
               {segmentWidth > 0 ? (
@@ -175,18 +180,22 @@ export function SignInScreen() {
                   className="absolute inset-y-0 h-full left-0 rounded-[22px] border border-accent bg-accent"
                   style={{
                     width: 150,
+                    position: "absolute",
                     transform: [{ translateX: indicatorX }],
                   }}
                 />
               ) : null}
+              {/* Sign In Button */}
               <ScalePressable
-                style={{ width: segmentWidth }}
-                className="h-[54px]  items-center justify-center rounded-[18px] px-3 py-3.5 "
+                style={{ width: "50%" }}
+                className="h-[54px] items-center justify-center rounded-[18px] px-3 py-3.5 "
                 onPress={() => {
                   setMode("signIn");
                   setSubmitError(null);
                   setFeedback(null);
                 }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: mode === "signIn" }}
               >
                 <Text
                   numberOfLines={1}
@@ -199,13 +208,17 @@ export function SignInScreen() {
                   Sign in
                 </Text>
               </ScalePressable>
+              {/* Create Account Button */}
               <ScalePressable
-                className="min-h-[54px] flex-1 items-center justify-center rounded-[18px] px-3 py-3.5"
+                style={{ width: segmentWidth }}
+                className="h-[54px] items-center justify-center rounded-[18px] px-3 py-3.5 w-1/2"
                 onPress={() => {
                   setMode("signUp");
                   setSubmitError(null);
                   setFeedback(null);
                 }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: mode === "signUp" }}
               >
                 <Text
                   numberOfLines={1}
